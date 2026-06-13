@@ -1,6 +1,33 @@
 #include "Graph.h"
 
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+
 #define VERTS 12
+
+void randomGraphGenerator(int verticesqtd, std::string filename){
+  std::srand(std::time(nullptr));
+  std::ofstream arquivo(filename);
+
+  if(arquivo.is_open()){
+    int vertice1, vertice2;
+    const int minlimit = verticesqtd;
+    const int maxlimit = verticesqtd*(verticesqtd-1);
+    int arestasqtd = (minlimit + rand()%(maxlimit+minlimit));
+    for(int i = 0; i < arestasqtd; i++){
+      vertice1 = rand() % verticesqtd;
+      do {
+        vertice2 = rand() % verticesqtd;
+      }while (vertice2 == vertice1);
+      arquivo << vertice1 << " " << vertice2 << std::endl;
+    }
+    arquivo.close();
+  } else {
+    std::cout << "Error";
+  }
+}
 
 int main (int argc, char *argv[]) {
     Graph g(50, true);
