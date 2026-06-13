@@ -17,7 +17,6 @@
 class Graph{
 
 private:
-
     int n; // maximum capacity
     int last_vert; //current size
     bool directed;
