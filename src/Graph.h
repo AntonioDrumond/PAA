@@ -5,6 +5,10 @@
 #include <cstdint>
 #include <ctime>
 #include <iostream>
+#include <pthread.h>
+#include <queue>
+#include <tuple>
+#include <utility>
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -31,6 +35,75 @@ public:
 
     //Destructor
     ~Graph() = default;
+
+    bool special_bfs(int starting_vert, int target_vert) {
+        if (starting_vert < 0 || target_vert < 0 ||
+            starting_vert >= last_vert || target_vert >= last_vert) {
+            return false;
+        }
+
+        if (starting_vert == target_vert) {
+            return true;
+        }
+
+        std::vector<bool> visited(last_vert, false);
+        std::queue<int> q;
+
+        visited[starting_vert] = true;
+        q.push(starting_vert);
+
+        while (!q.empty()) {
+            int current = q.front();
+            q.pop();
+
+            for (int neighbor : arr[current]) {
+                if (neighbor < 0 || neighbor >= last_vert) {
+                    continue;
+                }
+
+                bool ignored_edge =
+                    (current == starting_vert && neighbor == target_vert) ||
+                    (current == target_vert && neighbor == starting_vert);
+
+                if (ignored_edge || visited[neighbor]) {
+                    continue;
+                }
+
+                if (neighbor == target_vert) {
+                    return true;
+                }
+
+                visited[neighbor] = true;
+                q.push(neighbor);
+            }
+        }
+        return false;
+    }
+
+    Graph* reduce_transitivity_bfs() {
+        std::vector<std::pair<int, int>> all_edges;
+        all_edges.reserve(last_vert * (last_vert - 1));
+
+        for (int i=0; i<last_vert; i++) {
+            for(int nei : vert_neighbors(i)) {
+                all_edges.push_back({i, nei});
+            }
+        }
+
+        for (std::pair<int, int> edge : all_edges) {
+            if (check_edge(edge.first, edge.second)) {
+                std::cout << "Evaluating (" << edge.first << ", " << edge.second << ") -> ";
+                if (special_bfs(edge.first, edge.second)) {
+                    std::cout << "Redundant\n";
+                    remove_edge(edge.first, edge.second);
+                }
+                else 
+                    std::cout << "Necessary\n";
+            }
+        }
+
+        return this;
+    }
 
     int vert_count() {
         return last_vert;
