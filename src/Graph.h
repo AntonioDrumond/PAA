@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <ctime>
+#include <fstream>
 #include <iostream>
 #include <pthread.h>
 #include <queue>
@@ -36,51 +37,119 @@ public:
     //Destructor
     ~Graph() = default;
 
-    bool special_bfs(int starting_vert, int target_vert) {
-        if (starting_vert < 0 || target_vert < 0 ||
-            starting_vert >= last_vert || target_vert >= last_vert) {
-            return false;
+    static Graph* from_file(int n, const char *const filename, bool directed = false) {
+        Graph* g = new Graph(n, directed);
+        std::ifstream f;
+        f.open(filename);
+        std::vector<std::pair<int, int>> all_edges;
+        while (!f.eof()) {
+            int v1, v2;
+            f >> v1 >> v2;
+            all_edges.push_back({v1, v2});
         }
 
-        if (starting_vert == target_vert) {
-            return true;
+        int biggest_vert = -1;
+        for (std::pair<int, int> i : all_edges) {
+            biggest_vert = std::max(biggest_vert, i.first);
+            biggest_vert = std::max(biggest_vert, i.second);
         }
 
-        std::vector<bool> visited(last_vert, false);
-        std::queue<int> q;
+        for(int i=0; i<=biggest_vert; i++) g->add_vert();
 
-        visited[starting_vert] = true;
-        q.push(starting_vert);
-
-        while (!q.empty()) {
-            int current = q.front();
-            q.pop();
-
-            for (int neighbor : arr[current]) {
-                if (neighbor < 0 || neighbor >= last_vert) {
-                    continue;
-                }
-
-                bool ignored_edge =
-                    (current == starting_vert && neighbor == target_vert) ||
-                    (current == target_vert && neighbor == starting_vert);
-
-                if (ignored_edge || visited[neighbor]) {
-                    continue;
-                }
-
-                if (neighbor == target_vert) {
-                    return true;
-                }
-
-                visited[neighbor] = true;
-                q.push(neighbor);
-            }
+        for (std::pair<int, int> i : all_edges) {
+            g->add_edge(i.first, i.second);
         }
-        return false;
+
+        return g;
     }
 
-    Graph* reduce_transitivity_bfs() {
+    Graph* reduce_transitivity_exp() {
+        std::vector<std::pair<int, int>> all_edges;
+        all_edges.reserve(edge_count());
+
+        for (int i=0; i<last_vert; i++) {
+            for (int nei : arr[i]) {
+                if (directed || i <= nei) {
+                    all_edges.push_back({i, nei});
+                }
+            }
+        }
+
+        auto reachable = [](Graph* graph, int starting_vert, int target_vert) {
+            if (starting_vert < 0 || target_vert < 0 ||
+                starting_vert >= graph->last_vert || target_vert >= graph->last_vert) {
+                return false;
+            }
+
+            if (starting_vert == target_vert) {
+                return true;
+            }
+
+            std::vector<bool> visited(graph->last_vert, false);
+            std::queue<int> q;
+
+            visited[starting_vert] = true;
+            q.push(starting_vert);
+
+            while (!q.empty()) {
+                int current = q.front();
+                q.pop();
+
+                for (int neighbor : graph->arr[current]) {
+                    if (neighbor < 0 || neighbor >= graph->last_vert || visited[neighbor]) {
+                        continue;
+                    }
+
+                    if (neighbor == target_vert) {
+                        return true;
+                    }
+
+                    visited[neighbor] = true;
+                    q.push(neighbor);
+                }
+            }
+
+            return false;
+        };
+
+        Graph current(this->n, this->directed);
+        current.last_vert = this->last_vert;
+        current.label = this->label;
+
+        Graph* best = this->clone();
+        int best_edge_count = best->edge_count();
+
+        auto search = [&](auto&& self, int edge_index) -> void {
+            if (current.edge_count() >= best_edge_count) {
+                return;
+            }
+
+            if (edge_index == (int) all_edges.size()) {
+                for (std::pair<int, int> edge : all_edges) {
+                    if (!reachable(&current, edge.first, edge.second)) {
+                        return;
+                    }
+                }
+
+                delete best;
+                best = current.clone();
+                best_edge_count = best->edge_count();
+                return;
+            }
+
+            self(self, edge_index + 1);
+
+            current.add_edge(all_edges[edge_index].first, all_edges[edge_index].second);
+            self(self, edge_index + 1);
+            current.remove_edge(all_edges[edge_index].first, all_edges[edge_index].second);
+        };
+
+        search(search, 0);
+        return best;
+    }
+
+    void reduce_transitivity_bfs() {
+        int counter = 0;
         std::vector<std::pair<int, int>> all_edges;
         all_edges.reserve(last_vert * (last_vert - 1));
 
@@ -96,17 +165,28 @@ public:
                 if (special_bfs(edge.first, edge.second)) {
                     std::cout << "Redundant\n";
                     remove_edge(edge.first, edge.second);
+                    counter++;
                 }
                 else 
                     std::cout << "Necessary\n";
             }
         }
 
-        return this;
+        std::cout << "Edges removed: " << counter << "\n";
     }
 
     int vert_count() {
         return last_vert;
+    }
+
+    int edge_count() {
+        int counter = 0;
+        for (int i=0; i<last_vert; i++) {
+            for(int nei : vert_neighbors(i)) {
+                counter++;
+            }
+        }
+        return counter;
     }
 
     Graph* clone(void) {
@@ -239,6 +319,50 @@ public:
     }
 
 private:
+
+    bool special_bfs(int starting_vert, int target_vert) {
+        if (starting_vert < 0 || target_vert < 0 ||
+            starting_vert >= last_vert || target_vert >= last_vert) {
+            return false;
+        }
+
+        if (starting_vert == target_vert) {
+            return true;
+        }
+
+        std::vector<bool> visited(last_vert, false);
+        std::queue<int> q;
+
+        visited[starting_vert] = true;
+        q.push(starting_vert);
+
+        while (!q.empty()) {
+            int current = q.front();
+            q.pop();
+
+            for (int neighbor : arr[current]) {
+                if (neighbor < 0 || neighbor >= last_vert) {
+                    continue;
+                }
+
+                bool ignored_edge =
+                    (current == starting_vert && neighbor == target_vert) ||
+                    (current == target_vert && neighbor == starting_vert);
+
+                if (ignored_edge || visited[neighbor]) {
+                    continue;
+                }
+
+                if (neighbor == target_vert) {
+                    return true;
+                }
+
+                visited[neighbor] = true;
+                q.push(neighbor);
+            }
+        }
+        return false;
+    }
 
     void printVec(std::unordered_set<int> v){
         std::cout << "| ";
