@@ -8,6 +8,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <queue>
+#include <stack>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -37,7 +38,20 @@ public:
     //Destructor
     ~Graph() = default;
 
-    void reduce_transitivity_longest_path() {
+    std::vector<std::vector<int>> find_scc() {
+        std::vector<std::vector<int>> sccs;
+        sccs.reserve(last_vert);
+        std::vector<int> disc(this->last_vert, -1);
+        std::vector<int> low(this->last_vert, -1);
+        std::vector<bool> inSt(this->last_vert, false);
+        std::stack<int> st;
+        int timer = 0;
+
+        for (int v=0; v<this->last_vert; v++) {
+            if (disc[v] == -1) find_scc_rec(v, disc, low, inSt, st, timer, sccs);
+        }
+
+        return sccs;
     }
 
     static Graph* from_file(int n, const char *const filename, bool directed = false) {
@@ -326,6 +340,47 @@ public:
 
 private:
 
+    void find_scc_rec(
+        int v, // Current vertex
+        std::vector<int> &disc,
+        std::vector<int> &low,
+        std::vector<bool> &inSt,
+        std::stack<int> &st,
+        int &timer,
+        std::vector<std::vector<int>> &sccs
+    ) {
+        disc[v] = low[v] = ++timer;
+        st.push(v);
+        inSt[v] = true;
+
+        //std::cout << "vertex " << v << " -> ";
+        for (int nei : this->vert_neighbors(v)) {
+            //std::cout << nei << " ";
+            if (disc[nei] == -1) {
+                find_scc_rec(nei, disc, low, inSt, st, timer, sccs);
+                low[v] = std::min(low[v], low[nei]); // Check if subtree rooted in nei
+                                                // has a connection with one of v's ancestors
+            }
+            else if (inSt[nei]) {
+                low[v] = std::min(low[v], disc[nei]);
+            }
+        }
+        //std::cout << "\n";
+
+        if (low[v] == disc[v]) {
+            std::vector<int> scc;
+            bool loop = true;
+            while (loop) {
+                int x = st.top();
+                st.pop();
+                inSt[x] = false;
+                scc.push_back(x);
+                if (x == v) loop = false;
+            }
+            sccs.push_back(scc);
+        }
+    }
+
     bool comp_degree(const std::pair<int, int>& a, const std::pair<int, int>& b) {
         int degree_a = edge_number(a.first) + edge_number(a.second);
         int degree_b = edge_number(b.first) + edge_number(b.second);
@@ -383,209 +438,6 @@ private:
         }
         std::cout << "\n";
     }
-};
-
-class WeightedGraph{
-
-private:
-
-    int n; // maximum capacity
-    int last_vert; //current size
-    bool directed; 
-    std::vector<std::unordered_map<int, std::vector<double>>> arr; //adjacency list
-    std::vector<std::string> label;
-
-public:
-
-    //Constructor
-    WeightedGraph(int n, bool directed = false)
-    : n(n), last_vert(0), directed(directed), arr(n), label(n) {}
-
-    //Destructor
-    ~WeightedGraph() = default;
-
-    WeightedGraph* clone(void) {
-        WeightedGraph* sub = new WeightedGraph(this->n);
-        sub->last_vert = this->last_vert;
-        sub->directed = this->directed;
-        sub->arr = this->arr;
-        sub->label = this->label;
-        return (sub);
-    }
-
-    bool add_vert() {
-        if (last_vert < n) {
-            last_vert++;
-            return true;
-        }
-        return false;
-    }
-
-    bool add_vert(std::string label) {
-        if (last_vert < n) {
-            this->label[last_vert++] = label;
-            return true;
-        }
-        return false;
-    }
-
-    void setLabel(int vert, std::string label)
-    {
-        if (vert <= last_vert) {
-            this->label[vert] = label;
-        }
-        else {
-            throw std::invalid_argument("Vertex does not exist");
-        }
-    }
-
-    std::string getLabel(int vert)
-    {
-        if (vert <= last_vert) {
-            return (this->label[vert]);
-        }
-        else {
-            throw std::invalid_argument("Vertex does not exist");
-        }
-    }
-
-    void all_verts(){
-        while(add_vert()); // Adicionar todos os vertices possiveis
-    }
-
-    bool add_edge(int vert1, int vert2, double weight){
-        if(vert1 <= last_vert && vert2 <= last_vert){
-
-            // Verifica se a aresta ja existe ou se esse peso ja existe
-            if ( (arr[vert1].count(vert2) == 0) || (std::count(arr[vert1][vert2].begin(), arr[vert1][vert2].end (), weight) == 0) )
-            { 
-                arr[vert1][vert2].push_back(weight);
-                if (!directed) {
-                    arr[vert2][vert1].push_back(weight);
-                }
-                return true; // Aresta adicionada
-            }
-            else return false; // Vertices validos, mas ja ha aresta ou peso
-        }
-        else return false; // Vertices invalidos
-    }
-
-    bool check_edge(int vert1, int vert2){
-        if(vert1 <= last_vert && vert2 <= last_vert){
-            if (!directed) {
-                return (arr[vert1].count(vert2) > 0) && (arr[vert2].count(vert1) > 0);
-            }
-            else {
-                return (arr[vert1].count(vert2) > 0);
-            }
-        }
-        else return false; // Vertices invalidos
-    }
-
-    bool remove_edge(int vert1, int vert2)
-    {
-        if (check_edge(vert1, vert2)) {
-            arr[vert1].erase(vert2);
-            if (!directed) {
-                arr[vert2].erase(vert1);
-            }
-            return true;
-        }
-        else return false;
-    }
-
-    std::vector<double> get_weight (int vert1, int vert2) {
-        std::vector<double> w = std::vector<double>();
-        if (check_edge(vert1, vert2)) {
-            w = arr[vert1][vert2];
-        }
-        return (w);
-    }
-
-    bool remove_edge(int vert1, int vert2, double weight) 
-    {
-        if(check_edge(vert1, vert2)) 
-        {
-            if (arr[vert1][vert2].size() > 1) {
-                std::vector<double>* weight_list = &arr[vert1][vert2];
-                auto it = std::find(weight_list->begin(), weight_list->end(), weight);
-
-                if (it != weight_list->end()) {
-                    *it = weight_list->back();
-                    weight_list->pop_back();
-                }
-                else return false; // There is no edge with the given weight
-
-                if (!directed) {
-                    std::vector<double>* weight_list = &arr[vert2][vert1];
-                    auto it = std::find(weight_list->begin(), weight_list->end(), weight);
-
-                    *it = weight_list->back();	 	// Assuming that the weight was found based on the previous check
-                    weight_list->pop_back();
-                }
-                return true;
-            }
-            else if (arr[vert1][vert2][0] == weight)
-            {
-                arr[vert1].erase(vert2);
-                if (!directed) {
-                    arr[vert2].erase(vert1);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    int edge_number (int vert) {
-        return (arr[vert].size());
-    }
-
-    std::unordered_map<int, std::vector<double>> vert_neighbors(int vert) {
-        if(vert <= last_vert){
-            return arr[vert];
-        }
-        else {
-            throw std::invalid_argument("Vertex does not exist");
-        }
-    }
-
-    void print_csacademy() const {
-        // char *color = new char[10];
-        for (int i = 0; i < last_vert; i++) {
-            // snprintf(color, 9, "0x%02x%02x%02x", this->pix_color[i].r, this->pix_color[i].g, this->pix_color[i].b);
-            // std::cout << i << " " << color << "\n";
-            std::cout << i << "\n";
-        }
-        // delete[] color;
-        for (int i = 0; i < last_vert; i++) {
-            for (auto [neighbor, weight] : arr[i]) {
-                std::cout << i << " " << neighbor << " " << weight[0] << "\n";
-            }
-        }
-    }
-
-    void print_raw() const {
-        for (int i = 0; i < last_vert; i++) {
-            if (label[i] != "") {
-                std::cout << i << " : \"" << label[i] << "\" ) | ";
-            }
-            else {
-                std::cout << i << " ) | ";
-            }
-            for (auto [neighbor, weight_list] : arr[i]) {
-                std::cout << neighbor << "{";
-                int n = weight_list.size();
-                std::cout << weight_list[0];
-                for (int i = 1; i < n; i++) {
-                    std::cout << ", " << weight_list[i];
-                }
-                std::cout << "} | ";
-            }
-            std::cout << "\n";
-        }
-    }
-
 };
 
 #endif
