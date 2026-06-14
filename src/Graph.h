@@ -37,6 +37,9 @@ public:
     //Destructor
     ~Graph() = default;
 
+    void reduce_transitivity_longest_path() {
+    }
+
     static Graph* from_file(int n, const char *const filename, bool directed = false) {
         Graph* g = new Graph(n, directed);
         std::ifstream f;
@@ -47,20 +50,64 @@ public:
             f >> v1 >> v2;
             all_edges.push_back({v1, v2});
         }
-
         int biggest_vert = -1;
         for (std::pair<int, int> i : all_edges) {
             biggest_vert = std::max(biggest_vert, i.first);
             biggest_vert = std::max(biggest_vert, i.second);
         }
-
         for(int i=0; i<=biggest_vert; i++) g->add_vert();
-
         for (std::pair<int, int> i : all_edges) {
             g->add_edge(i.first, i.second);
         }
-
         return g;
+    }
+
+    void reduce_transitivity_bfs() {
+        int counter = 0;
+        std::vector<std::pair<int, int>> all_edges;
+        all_edges.reserve(last_vert * (last_vert - 1));
+
+        for (int i=0; i<last_vert; i++) {
+            for(int nei : vert_neighbors(i)) {
+                all_edges.push_back({i, nei});
+            }
+        }
+
+        /*
+        std::sort(all_edges.begin(), all_edges.end(),
+            [this](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+            return comp_degree(a, b);
+        });
+        */
+
+        for (std::pair<int, int> edge : all_edges) {
+            if (check_edge(edge.first, edge.second)) {
+                std::cout << "Evaluating (" << edge.first << ", " << edge.second << ") -> ";
+                if (special_bfs(edge.first, edge.second)) {
+                    std::cout << "Redundant\n";
+                    remove_edge(edge.first, edge.second);
+                    counter++;
+                }
+                else 
+                    std::cout << "Necessary\n";
+            }
+        }
+
+        std::cout << "Edges removed: " << counter << "\n";
+    }
+
+    int vert_count() {
+        return last_vert;
+    }
+
+    int edge_count() {
+        int counter = 0;
+        for (int i=0; i<last_vert; i++) {
+            for(int nei : vert_neighbors(i)) {
+                counter++;
+            }
+        }
+        return counter;
     }
 
     Graph* reduce_transitivity_exp() {
@@ -146,47 +193,6 @@ public:
 
         search(search, 0);
         return best;
-    }
-
-    void reduce_transitivity_bfs() {
-        int counter = 0;
-        std::vector<std::pair<int, int>> all_edges;
-        all_edges.reserve(last_vert * (last_vert - 1));
-
-        for (int i=0; i<last_vert; i++) {
-            for(int nei : vert_neighbors(i)) {
-                all_edges.push_back({i, nei});
-            }
-        }
-
-        for (std::pair<int, int> edge : all_edges) {
-            if (check_edge(edge.first, edge.second)) {
-                std::cout << "Evaluating (" << edge.first << ", " << edge.second << ") -> ";
-                if (special_bfs(edge.first, edge.second)) {
-                    std::cout << "Redundant\n";
-                    remove_edge(edge.first, edge.second);
-                    counter++;
-                }
-                else 
-                    std::cout << "Necessary\n";
-            }
-        }
-
-        std::cout << "Edges removed: " << counter << "\n";
-    }
-
-    int vert_count() {
-        return last_vert;
-    }
-
-    int edge_count() {
-        int counter = 0;
-        for (int i=0; i<last_vert; i++) {
-            for(int nei : vert_neighbors(i)) {
-                counter++;
-            }
-        }
-        return counter;
     }
 
     Graph* clone(void) {
@@ -319,6 +325,12 @@ public:
     }
 
 private:
+
+    bool comp_degree(const std::pair<int, int>& a, const std::pair<int, int>& b) {
+        int degree_a = edge_number(a.first) + edge_number(a.second);
+        int degree_b = edge_number(b.first) + edge_number(b.second);
+        return degree_a > degree_b;
+    }
 
     bool special_bfs(int starting_vert, int target_vert) {
         if (starting_vert < 0 || target_vert < 0 ||
