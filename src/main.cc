@@ -8,20 +8,17 @@ int main (int argc, char *argv[]) {
     // randomGraphGenerator(6, "graph.txt");
     Graph *g = Graph::from_file(10, "graph.txt", true);
     g->print_csacademy();
-    auto sccs = g->find_scc();
-    for (std::vector<int> &scc : sccs) {
-        std::cout << "[ ";
-        for (int j : scc) {
-            std::cout << "(" << j << ") ";
-        }
-        std::cout << "]\n";
-    }
+    auto e = g->reduce_transitivity_exp();
     auto cont = g->contract_sccs();
-    std::cout << "===================\n";
+    cont.first->reduce_transitivity_bfs();
+    std::cout << "CONTRACTED===================\n";
     cont.first->print_csacademy_labels();
-    std::cout << "===================\n";
+    std::cout << "EXPAND===================\n";
     Graph *expand = Graph::expand_sccs(cont);
     expand->print_csacademy_labels();
+    std::cout << "EXPO===================\n";
+    e->print_csacademy_labels();
+    delete e;
     delete cont.first;
     delete expand;
     /*
