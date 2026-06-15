@@ -8,6 +8,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <queue>
+#include <sstream>
 #include <stack>
 #include <tuple>
 #include <utility>
@@ -37,6 +38,82 @@ public:
 
     //Destructor
     ~Graph() = default;
+
+    static Graph* expand_sccs(std::pair<Graph *, std::vector<std::vector<int>>> &cont) {
+        int vert_count = 0;
+        for (auto scc : cont.second)
+            for (int v : scc)
+                 vert_count++;
+        Graph *g = new Graph(vert_count, true);
+        for (; vert_count-->0;)
+            g->add_vert();
+
+        // build cycles
+        for (auto scc : cont.second){
+            if (scc.size() > 1) {
+                for (int v=0; v<scc.size()-1; v++){
+                    g->add_edge(scc[v], scc[v+1]);
+                }
+                g->add_edge(scc[scc.size()-1], scc[0]);
+            }
+        }
+
+        // connect SCCs
+        for (int v1=0; v1<cont.first->last_vert; v1++) {
+            for (int v2 : cont.first->vert_neighbors(v1)){
+                // Get v1
+                std::stringstream v1_label_ss (cont.first->getLabel(v1));
+                std::string v1_label_first;
+                getline(v1_label_ss, v1_label_first, '_');
+                int actual_v1 = std::stoi(v1_label_first);
+                // Get v2
+                std::stringstream v2_label_ss (cont.first->getLabel(v2));
+                std::string v2_label_first;
+                getline(v2_label_ss, v2_label_first, '_');
+                int actual_v2 = std::stoi(v2_label_first);
+                
+                // g->add_edge(actual_v1, actual_v2);
+                g->add_edge(
+                    cont.second[which_scc(cont.second, actual_v1)][0],
+                    cont.second[which_scc(cont.second, actual_v2)][0]
+                );
+            }
+        }
+        return g;
+    }
+
+    std::pair<Graph *, std::vector<std::vector<int>>> contract_sccs() {
+        auto sccs = this->find_scc();
+        Graph *g = new Graph(sccs.size(), this->directed);
+
+        // Add verts
+        for (auto scc : sccs) {
+            std::stringstream scc_name_ss;
+            for(int v : scc) {
+                scc_name_ss << v << "_";
+            }
+            std::string scc_name;
+            scc_name_ss >> scc_name;
+            g->add_vert(scc_name);
+        }
+
+        // std::vector<std::pair<int, int>> all_edges;
+        // all_edges.reserve(last_vert * (last_vert - 1));
+
+        // Add edges to  contracted graph
+        for (int v1=0; v1<last_vert; v1++) {
+            for(int v2 : vert_neighbors(v1)) {
+                // all_edges.push_back({v1, v2});
+                int scc_v1 = which_scc(sccs, v1),
+                    scc_v2 = which_scc(sccs, v2);
+                if (scc_v1 != scc_v2) {
+                    g->add_edge(scc_v1, scc_v2);
+                }
+            }
+        }
+
+        return {g, sccs};
+    }
 
     std::vector<std::vector<int>> find_scc() {
         std::vector<std::vector<int>> sccs;
@@ -326,6 +403,30 @@ public:
         }
     }
 
+    void print_csacademy_labels(){
+        for(int i=0; i<last_vert; i++){
+            std::string l = this->getLabel(i);
+            if(l != "")
+                std::cout << l << "\n";
+            else 
+                std::cout << i << "\n";
+        }
+        for(int i=0; i<last_vert; i++){
+            for(int neighbor : arr[i]){
+                std::string l1 = this->getLabel(i);
+                std::string l2 = this->getLabel(neighbor);
+                if (l1 != "") 
+                    std::cout << l1 << " ";
+                else
+                    std::cout << i << " ";
+                if (l2 != "") 
+                    std::cout << l2 << "\n";
+                else
+                    std::cout << neighbor << "\n";
+            }
+        }
+    }
+
     void print_raw(){
         for(int i=0; i<last_vert; i++) {
             if (label[last_vert] != "") {
@@ -339,6 +440,15 @@ public:
     }
 
 private:
+
+    static int which_scc(std::vector<std::vector<int>> &sccs, int target) {
+        for (int scc=0; scc<sccs.size(); scc++) {
+            for (int v : sccs[scc]) {
+                if (target == v) return scc;
+            }
+        }
+        return -1;
+    }
 
     void find_scc_rec(
         int v, // Current vertex
