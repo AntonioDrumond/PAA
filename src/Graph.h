@@ -39,7 +39,7 @@ public:
     //Destructor
     ~Graph() = default;
 
-    static Graph* expand_sccs(std::pair<Graph *, std::vector<std::vector<int>>> &cont) {
+    static Graph* expand_sccs(std::pair<Graph *, std::vector<std::vector<int>>> &cont, Graph* original) {
         int vert_count = 0;
         for (auto scc : cont.second)
             for (int v : scc)
@@ -58,25 +58,14 @@ public:
             }
         }
 
-        // connect SCCs
-        for (int v1=0; v1<cont.first->last_vert; v1++) {
-            for (int v2 : cont.first->vert_neighbors(v1)){
-                // Get v1
-                std::stringstream v1_label_ss (cont.first->getLabel(v1));
-                std::string v1_label_first;
-                getline(v1_label_ss, v1_label_first, '_');
-                int actual_v1 = std::stoi(v1_label_first);
-                // Get v2
-                std::stringstream v2_label_ss (cont.first->getLabel(v2));
-                std::string v2_label_first;
-                getline(v2_label_ss, v2_label_first, '_');
-                int actual_v2 = std::stoi(v2_label_first);
-                
-                // g->add_edge(actual_v1, actual_v2);
-                g->add_edge(
-                    cont.second[which_scc(cont.second, actual_v1)][0],
-                    cont.second[which_scc(cont.second, actual_v2)][0]
-                );
+        // Connect SCCs (Better)
+        for (int v1=0; v1<original->last_vert; v1++) {
+            for (int v2 : original->vert_neighbors(v1)){
+                int scc_v1 = which_scc(cont.second, v1);
+                int scc_v2 = which_scc(cont.second, v2);
+                if ( scc_v1 != scc_v2 && cont.first->check_edge(scc_v1, scc_v2) ) {
+                    g->add_edge(v1, v2);
+                }
             }
         }
         return g;

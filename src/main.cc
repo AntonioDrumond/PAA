@@ -14,7 +14,7 @@ int main (int argc, char *argv[]) {
     std::cout << "CONTRACTED===================\n";
     cont.first->print_csacademy_labels();
     std::cout << "EXPAND===================\n";
-    Graph *expand = Graph::expand_sccs(cont);
+    Graph *expand = Graph::expand_sccs(cont, g);
     expand->print_csacademy_labels();
     std::cout << "EXPO===================\n";
     e->print_csacademy_labels();
