@@ -1,4 +1,4 @@
 @echo off
 
 g++ src/main.cc -o src/main.exe
-.\src\main.exe | python visualizer\visualizer.py
+.\src\main.exe %1 | python visualizer\visualizer.py

@@ -8,6 +8,16 @@ Primeiro, baixe as dependências do visualizador de grafos com:
 pip install -r visualizer/requirements.txt 
 ```
 
+Defina o grafo no arquivo `graph.txt`
+
+Exemplo:
+```
+0 1
+0 2
+1 2
+2 0
+```
+
 Após isso, execute o código com:
 ```fish
 .\run.bat # Windows
@@ -23,4 +33,12 @@ g++ src/main.cc -o src/main
 # Windows
 g++ src/main.cc -o src/main.exe
 .\src\main.exe | python visualizer\visualizer.py
+```
+
+Também é possível gerar um grafo aleatório ao adicionar a fla `random`, como:
+
+```fish
+./run.sh random
+# Ou
+.\src\main.exe random | python visualizer\visualizer.py
 ```

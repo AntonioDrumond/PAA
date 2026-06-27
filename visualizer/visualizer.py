@@ -10,9 +10,9 @@ def executar_visualizador():
         def extrair_grafos(linhas_texto):
             conjunto_grafos = {
                 "Original": nx.DiGraph(),
-                "Contraido": nx.DiGraph(),
-                "Expandido": nx.DiGraph(),
-                "Exponenciado": nx.DiGraph()
+                "Contracted": nx.DiGraph(),
+                "Expanded": nx.DiGraph(),
+                "Exponential": nx.DiGraph()
             }
             etapa_atual = "Original"
             nos_visitados = set()
@@ -21,15 +21,15 @@ def executar_visualizador():
                 if not linha_atual:
                     continue
                 if 'CONTRACTED===================' in linha_atual:
-                    etapa_atual = "Contraido"
+                    etapa_atual = "Contracted"
                     nos_visitados = set()
                     continue
                 elif 'EXPAND===================' in linha_atual:
-                    etapa_atual = "Expandido"
+                    etapa_atual = "Expanded"
                     nos_visitados = set()
                     continue
                 elif 'EXPO===================' in linha_atual:
-                    etapa_atual = "Exponenciado"
+                    etapa_atual = "Exponential"
                     nos_visitados = set()
                     continue
                 if linha_atual.startswith('Evaluating') or linha_atual.startswith('Edges removed'):
@@ -76,7 +76,7 @@ def executar_visualizador():
                                        edge_color='#94a3b8', width=2, connectionstyle="arc3,rad=0.15", alpha=0.8)
                 nx.draw_networkx_labels(estrutura_atual, posicao_nos, ax=eixo_atual, font_size=12, 
                                         font_family='sans-serif', font_weight='bold', font_color='white')
-                titulo_eixo = f"Etapa: {nome_etapa} (Nos: {estrutura_atual.number_of_nodes()}, Arestas: {estrutura_atual.number_of_edges()})"
+                titulo_eixo = f"Step: {nome_etapa} (Vertices: {estrutura_atual.number_of_nodes()}, Edges: {estrutura_atual.number_of_edges()})"
                 eixo_atual.set_title(titulo_eixo, fontsize=16, fontweight='bold', color='#f8fafc', pad=15)
                 eixo_atual.axis('off')
                 
