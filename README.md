@@ -16,6 +16,11 @@ Após isso, execute o código com:
 
 Ou alternativamente:
 ```fish
+# Linux
+g++ src/main.cc -o src/main
+.\src\main | python visualizer\visualizer.py
+
+# Windows
 g++ src/main.cc -o src/main.exe
 .\src\main.exe | python visualizer\visualizer.py
 ```
