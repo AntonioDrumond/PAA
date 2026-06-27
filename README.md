@@ -35,7 +35,9 @@ g++ src/main.cc -o src/main.exe
 .\src\main.exe | python visualizer\visualizer.py
 ```
 
-Também é possível gerar um grafo aleatório ao adicionar a fla `random`, como:
+---
+
+Também é possível gerar um grafo aleatório ao adicionar a flag `random`, como:
 
 ```fish
 ./run.sh random
