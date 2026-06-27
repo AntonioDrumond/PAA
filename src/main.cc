@@ -13,6 +13,7 @@ int main (int argc, char *argv[]) {
     }
 
     Graph *g = Graph::from_file(10, "graph.txt", true);
+    g->print_csacademy();
 
     auto e = g->reduce_transitivity_exp();
     auto cont = g->contract_sccs();
