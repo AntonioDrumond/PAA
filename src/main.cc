@@ -5,7 +5,7 @@
 
 int main (int argc, char *argv[]) {
     // Graph *g = new Graph(10, true);
-    // randomGraphGenerator(6, "graph.txt");
+    randomGraphGenerator(10, "graph.txt");
     Graph *g = Graph::from_file(10, "graph.txt", true);
     g->print_csacademy();
     g->reduce_transitivity_bfs();
