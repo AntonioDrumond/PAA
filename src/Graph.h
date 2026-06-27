@@ -58,12 +58,24 @@ public:
             }
         }
 
+        std::vector<std::pair<int, int>> used_pairs;
+
         // Connect SCCs (Better)
         for (int v1=0; v1<original->last_vert; v1++) {
             for (int v2 : original->vert_neighbors(v1)){
+
                 int scc_v1 = which_scc(cont.second, v1);
                 int scc_v2 = which_scc(cont.second, v2);
-                if ( scc_v1 != scc_v2 && cont.first->check_edge(scc_v1, scc_v2) ) {
+
+                // Avoid connecting the same pair more than once
+                std::pair<int, int> pair = std::pair(scc_v1, scc_v2);
+                auto find = std::find(used_pairs.begin(), used_pairs.end(), pair);
+
+                if (scc_v1 != scc_v2 
+                        && cont.first->check_edge(scc_v1, scc_v2)
+                        && find == used_pairs.end()) {
+
+                    used_pairs.push_back(pair);
                     g->add_edge(v1, v2);
                 }
             }
