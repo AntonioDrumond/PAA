@@ -1,2 +1,3 @@
-./src/main
-./src/main.exe
+src/main
+src/main.exe
+graph.txt
