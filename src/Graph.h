@@ -166,6 +166,8 @@ public:
                 if (special_bfs(edge.first, edge.second)) {
                     std::cout << "Redundant\n";
                     remove_edge(edge.first, edge.second);
+                    if (!this->directed)
+                        remove_edge(edge.second, edge.first);
                     counter++;
                 }
                 else 
