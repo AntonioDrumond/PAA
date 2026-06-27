@@ -42,7 +42,7 @@ public:
     static Graph* expand_sccs(std::pair<Graph *, std::vector<std::vector<int>>> &cont, Graph* original) {
         int vert_count = 0;
         for (auto scc : cont.second)
-            for (int v : scc)
+            for (int _ : scc)
                  vert_count++;
         Graph *g = new Graph(vert_count, true);
         for (; vert_count-->0;)
@@ -51,7 +51,7 @@ public:
         // build cycles
         for (auto scc : cont.second){
             if (scc.size() > 1) {
-                for (int v=0; v<scc.size()-1; v++){
+                for (int v=0; v < (int)scc.size()-1; v++){
                     g->add_edge(scc[v], scc[v+1]);
                 }
                 g->add_edge(scc[scc.size()-1], scc[0]);
@@ -197,7 +197,7 @@ public:
     int edge_count() {
         int counter = 0;
         for (int i=0; i<last_vert; i++) {
-            for(int nei : vert_neighbors(i)) {
+            for(int _ : vert_neighbors(i)) {
                 counter++;
             }
         }
@@ -445,7 +445,7 @@ public:
 private:
 
     static int which_scc(std::vector<std::vector<int>> &sccs, int target) {
-        for (int scc=0; scc<sccs.size(); scc++) {
+        for (int scc=0; scc < (int)sccs.size(); scc++) {
             for (int v : sccs[scc]) {
                 if (target == v) return scc;
             }
