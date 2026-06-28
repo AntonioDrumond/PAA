@@ -48,3 +48,16 @@ Também é possível gerar um grafos aleatórios e não-direcionados ao adiciona
 ./src/main random > out.txt
 python visualizer\visualizer.py --undirected out.txt
 ```
+
+## Contribuições
+
+Embora as contribuições estejam organizadas por área de responsabilidade principal, todos os membros participaram ativamente do desenvolvimento do projeto como um todo, incluindo discussões, revisões e decisões conjuntas ao longo de todas as etapas.
+
+- **Antônio Drumond Cota de Sousa:** implementação da estrutura de dados de grafo e algoritmos.
+- **Davi Ferreira Puddo:** desenvolvimento e execução dos testes.
+- **Gabriel Valedo Batista Silva:** implementação do gerador de grafos aleatórios.
+- **João Pedro Torres:** redação do relatório.
+- **Laura Menezes Heráclito Alves:** implementação do visualizador de grafos.
+- **Lucas Carneiro Nassau Malta:** revisão bibliográfica.
+- **Mateus Henrique Medeiros Diniz:** desenvolvimento e execução dos testes.
+- **Raquel de Parde Motta:** redação do relatório.
