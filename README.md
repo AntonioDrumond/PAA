@@ -27,20 +27,24 @@ Após isso, execute o código com:
 Ou alternativamente:
 ```fish
 # Linux
-g++ src/main.cc -o src/main
-.\src\main | python visualizer\visualizer.py
+g++ ./src/main.cc -o ./src/main
+./src/main > out.txt
+python visualizer/visualizer.py out.txt
 
 # Windows
-g++ src/main.cc -o src/main.exe
-.\src\main.exe | python visualizer\visualizer.py
+g++ .\src\main.cc -o .\src\main.exe
+.\src\main.exe > out.txt
+python visualizer\visualizer.py out.txt
 ```
 
----
-
-Também é possível gerar um grafo aleatório ao adicionar a flag `random`, como:
+Também é possível gerar um grafos aleatórios e não-direcionados ao adicionar as flags `random` e `undirected` respectivamente.
 
 ```fish
-./run.sh random
+./run.x random
+./run.x undirected
+./run.x random undirected
+
 # Ou
-.\src\main.exe random | python visualizer\visualizer.py
+./src/main random > out.txt
+python visualizer\visualizer.py --undirected out.txt
 ```
