@@ -57,7 +57,7 @@ Embora as contribuições estejam organizadas por área de responsabilidade prin
 - **Davi Ferreira Puddo:** desenvolvimento e execução dos testes.
 - **Gabriel Valedo Batista Silva:** implementação do gerador de grafos aleatórios.
 - **João Pedro Torres:** redação do relatório.
-- **Laura Menezes Heráclito Alves:** implementação do visualizador de grafos.
+- **Laura Menezes Heráclito Alves:** revisão bibliográfica
 - **Lucas Carneiro Nassau Malta:** revisão bibliográfica.
 - **Mateus Henrique Medeiros Diniz:** desenvolvimento e execução dos testes.
 - **Raquel de Parde Motta:** redação do relatório.
