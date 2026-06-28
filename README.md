@@ -1,5 +1,7 @@
-# PAA
-Trabalho para a disciplina de PAA, da universidade PUC Minas com o professor Sílvio Jamil Ferzoli Guimarães
+# Trabalho Prático de Projeto e Análise de Algoritmos
+Trabalho para a disciplina de PAA, do curso de Ciência da Computação da Pontifícia Universidade Católica de Minas Gerais. 
+Professor: Sílvio Jamil Ferzoli Guimarães
+Tema: Redução de Transitividade em Grafos
 
 # Execução
 
