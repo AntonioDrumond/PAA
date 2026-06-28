@@ -1,7 +1,7 @@
 # Trabalho Prático de Projeto e Análise de Algoritmos
 Trabalho para a disciplina de PAA, do curso de Ciência da Computação da Pontifícia Universidade Católica de Minas Gerais. 
-Professor: Sílvio Jamil Ferzoli Guimarães
-Tema: Redução de Transitividade em Grafos
+- Professor: Sílvio Jamil Ferzoli Guimarães
+- Tema: Redução de Transitividade em Grafos
 
 # Execução
 
