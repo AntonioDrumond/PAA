@@ -37,11 +37,7 @@ g++ .\src\main.cc -o .\src\main.exe
 python visualizer\visualizer.py out.txt
 ```
 
-<<<<<<< HEAD
 Também é possível gerar um grafos aleatórios e não-direcionados ao adicionar as flags `random` e `undirected` respectivamente.
-=======
-Também é possível gerar um grafo aleatório ao adicionar a flag `random`, como:
->>>>>>> refs/remotes/origin/main
 
 ```fish
 ./run.x random
